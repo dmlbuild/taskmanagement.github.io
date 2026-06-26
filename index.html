@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Workspace</title>
+    <!-- Tailwind CSS v4 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center font-bold text-lg text-white">🗂️</div>
+            <h1 class="text-xl font-bold tracking-tight">Kanban<span class="text-indigo-400 font-light">Workspace</span></h1>
+        </div>
+        <button id="openModalBtn" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition cursor-pointer shadow-lg shadow-indigo-600/20">
+            + New Task
+        </button>
+    </header>
+
+    <!-- Main Kanban Board Grid Container -->
+    <main class="flex-1 p-4 md:p-6 overflow-x-auto">
+        <div class="flex gap-5 min-w-[900px] h-full items-start">
+            
+            <!-- Column 1: Backlog -->
+            <div class="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex flex-col max-h-[80vh]">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h2 class="font-bold text-sm text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> Backlog
+                    </h2>
+                    <span id="count-backlog" class="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-400 font-mono">0</span>
+                </div>
+                <div id="backlog" class="kanban-column flex-1 overflow-y-auto space-y-3 min-h-[150px] pb-4"></div>
+            </div>
+
+            <!-- Column 2: Todo -->
+            <div class="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex flex-col max-h-[80vh]">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h2 class="font-bold text-sm text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-sky-400"></span> To Do
+                    </h2>
+                    <span id="count-todo" class="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-400 font-mono">0</span>
+                </div>
+                <div id="todo" class="kanban-column flex-1 overflow-y-auto space-y-3 min-h-[150px] pb-4"></div>
+            </div>
+
+            <!-- Column 3: In Progress -->
+            <div class="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex flex-col max-h-[80vh]">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h2 class="font-bold text-sm text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> In Progress
+                    </h2>
+                    <span id="count-progress" class="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-400 font-mono">0</span>
+                </div>
+                <div id="progress" class="kanban-column flex-1 overflow-y-auto space-y-3 min-h-[150px] pb-4"></div>
+            </div>
+
+            <!-- Column 4: Done -->
+            <div class="flex-1 bg-slate-900/60 border border-slate-800/80 rounded-xl p-4 flex flex-col max-h-[80vh]">
+                <div class="flex justify-between items-center mb-3 px-1">
+                    <h2 class="font-bold text-sm text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Done
+                    </h2>
+                    <span id="count-done" class="text-xs bg-slate-800 px-2 py-0.5 rounded-full text-slate-400 font-mono">0</span>
+                </div>
+                <div id="done" class="kanban-column flex-1 overflow-y-auto space-y-3 min-h-[150px] pb-4"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Task Creation Modal dialog backdrop -->
+    <div id="taskModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-xl p-6 shadow-2xl relative">
+            <h3 class="text-lg font-bold text-slate-100 mb-4">Create New Task</h3>
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Task Title</label>
+                    <input type="text" id="taskTitle" required placeholder="What needs to be done?" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Description</label>
+                    <textarea id="taskDesc" rows="3" placeholder="Add some context or subtasks..." class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500 text-slate-200 resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Priority</label>
+                    <select id="taskPriority" class="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-sm focus:outline-none focus:border-indigo-500 text-slate-200">
+                        <option value="low">🟢 Low Priority</option>
+                        <option value="medium" selected>🟡 Medium Priority</option>
+                        <option value="high">🔴 High Priority</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" id="closeModalBtn" class="px-4 py-2 text-sm font-medium text-slate-400 hover:text-slate-200 transition cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-lg text-sm font-semibold transition text-white cursor-pointer">Add Task</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
